@@ -26,8 +26,9 @@ class MyPlugin(Star):
         self._timeout: int = 5
         self._headers: Dict[str, str] = {}
         self._session: Optional[aiohttp.ClientSession] = None
+        self.initialize()
 
-    async def initialize(self):
+    def initialize(self):
         """加载配置并编译正则。"""
         if not self._raw_config:
             logger.error("未获取到配置，插件初始化终止")
