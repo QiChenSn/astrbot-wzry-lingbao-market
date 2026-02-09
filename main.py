@@ -66,6 +66,9 @@ class MyPlugin(Star):
         if not self._api_url:
             logger.warning("api_url 未配置，插件停用")
             return
+        if not self._api_url.lower().startswith(("http://", "https://")):
+            logger.error("api_url 格式错误，必须以 http:// 或 https:// 开头，当前值: %s", self._api_url)
+            return
         try:
             self._regex = re.compile(pattern)
         except re.error as exc:
@@ -116,7 +119,7 @@ class MyPlugin(Star):
                 else:
                     logger.info("转发成功 status=%s", resp.status)
         except Exception:
-            logger.exception("转发匹配内容时出现异常")
+            logger.exception("转发匹配内容时出现异常，url=%s payload=%s", self._api_url, payload)
 
     async def terminate(self):
         """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
