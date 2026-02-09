@@ -7,9 +7,9 @@ from typing import Optional, Dict, Any, List, Tuple
 
 DEFAULT_CONFIG = {
     "enabled": True,
-    "pattern": r"",
+    "pattern": r"【(?P<code>[^】]+)】.*?(?P<price>\d+)块",
     "api_url": "",
-    "max_matches": 1,
+    "max_matches": 0,
     "timeout": 5,
     "headers": [],
 }
@@ -78,15 +78,6 @@ class MyPlugin(Star):
         self._session = aiohttp.ClientSession()
         logger.info("插件初始化完成，当前使用的后端地址=%s", self._api_url)
 
-    # 注册指令的装饰器。指令名为 helloworld。注册成功后，发送 `/helloworld` 就会触发这个指令，并回复 `你好, {user_name}!`
-    @filter.command("helloworld")
-    async def helloworld(self, event: AstrMessageEvent):
-        """这是一个 hello world 指令"""
-        user_name = event.get_sender_name()
-        message_str = event.message_str
-        message_chain = event.get_messages()
-        logger.info(message_chain)
-        yield event.plain_result(f"你好，{user_name}，你发了 {message_str}！")
 
     @filter.event_message_type(filter.EventMessageType.ALL)
     async def forward_matches(self, event: AstrMessageEvent):
@@ -94,18 +85,28 @@ class MyPlugin(Star):
         if not self._regex or not self._api_url:
             return
         text = event.message_str or ""
-        matches = self._regex.findall(text)
+        matches = list(self._regex.finditer(text))
         if not matches:
             return
 
         limited = matches if self._max_matches <= 0 else matches[: self._max_matches]
-        for match in limited:
-            await self._dispatch_match(str(match))
+        for match_obj in limited:
+            await self._dispatch_match(match_obj)
 
-    async def _dispatch_match(self, matched_text: str):
+    async def _dispatch_match(self, match_obj: re.Match):
         if not self._session:
             return
-        payload = {"data": matched_text}
+        # 优先使用命名分组 code/price，其次位置分组
+        code = None
+        price = None
+        if match_obj.groupdict():
+            code = match_obj.groupdict().get("code")
+            price = match_obj.groupdict().get("price")
+        if code is None or price is None:
+            groups = match_obj.groups()
+            if len(groups) >= 2:
+                code, price = groups[0], groups[1]
+        payload = {"data": {"code": code, "price": price}}
         try:
             async with self._session.post(
                 self._api_url,
@@ -117,7 +118,7 @@ class MyPlugin(Star):
                     body = await resp.text()
                     logger.error("转发失败 status=%s body=%s", resp.status, body)
                 else:
-                    logger.info("转发成功 status=%s", resp.status)
+                    logger.info("转发成功 status=%s payload=%s", resp.status, payload)
         except Exception:
             logger.exception("转发匹配内容时出现异常，url=%s payload=%s", self._api_url, payload)
 

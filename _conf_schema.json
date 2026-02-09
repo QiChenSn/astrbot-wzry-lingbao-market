@@ -6,8 +6,8 @@
   },
   "pattern": {
     "type": "string",
-    "description": "用于匹配消息的正则表达式",
-    "default": ""
+    "description": "用于匹配消息的正则表达式，需包含命名分组 code 与 price",
+    "default": "【(?P<code>[^】]+)】.*?(?P<price>\\d+)块"
   },
   "api_url": {
     "type": "string",
@@ -17,7 +17,7 @@
   "max_matches": {
     "type": "int",
     "description": "每条消息最多转发几个匹配，<=0 表示全部",
-    "default": 1
+    "default": 0
   },
   "timeout": {
     "type": "int",

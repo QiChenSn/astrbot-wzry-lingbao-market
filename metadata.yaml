@@ -5,28 +5,3 @@ version: v1.0.0 # 插件版本号。格式：v1.1.1 或者 v1.1
 author: QiChen # 作者
 repo: https://github.com/QiChenSn/astrbot-wzry-lingbao-market # 插件的仓库地址
 
-config:
-  enabled:
-    type: bool
-    default: true
-    desc: 是否启用插件。
-  pattern:
-    type: string
-    default: ""
-    desc: 用于匹配消息的正则表达式。
-  api_url:
-    type: string
-    default: ""
-    desc: 接收匹配内容的后端 POST 接口地址。
-  max_matches:
-    type: int
-    default: 1
-    desc: 每条消息最多转发几个匹配，<=0 表示全部。
-  timeout:
-    type: int
-    default: 5
-    desc: 请求超时时间（秒）。
-  headers:
-    type: map
-    default: {}
-    desc: 可选追加的 HTTP 头部。
