@@ -108,7 +108,17 @@ class MyPlugin(Star):
             groups = match_obj.groups()
             if len(groups) >= 2:
                 code, price = groups[0], groups[1]
-        payload = {"code": code, "price": price}
+
+        # 确保 code 是字符串，price 是整数
+        try:
+            code_str = str(code) if code is not None else ""
+            price_int = int(price) if price is not None else 0
+        except ValueError:
+            logger.error("价格转换失败，无法转换为整数: price=%s", price)
+            return
+
+        payload = {"code": code_str, "price": price_int}
+        logger.debug("发送负载：%s", payload)
         try:
             async with self._session.post(
                 self._api_url,
