@@ -83,6 +83,7 @@ class MyPlugin(Star):
     async def forward_matches(self, event: AstrMessageEvent):
         """监听所有消息，匹配配置正则并转发到后端。"""
         if not self._regex or not self._api_url:
+            logger.debug("正则或接口地址未就绪，跳过本次消息")
             return
         text = event.message_str or ""
         matches = list(self._regex.finditer(text))
@@ -95,6 +96,7 @@ class MyPlugin(Star):
 
     async def _dispatch_match(self, match_obj: re.Match):
         if not self._session:
+            logger.debug("HTTP 会话未初始化，无法转发")
             return
         # 优先使用命名分组 code/price，其次位置分组
         code = None
@@ -106,7 +108,7 @@ class MyPlugin(Star):
             groups = match_obj.groups()
             if len(groups) >= 2:
                 code, price = groups[0], groups[1]
-        payload = {"data": {"code": code, "price": price}}
+        payload = {"code": code, "price": price}
         try:
             async with self._session.post(
                 self._api_url,
@@ -116,7 +118,7 @@ class MyPlugin(Star):
             ) as resp:
                 if resp.status >= 400:
                     body = await resp.text()
-                    logger.error("转发失败 status=%s body=%s", resp.status, body)
+                    logger.error("转发失败 status=%s body=%s payload=%s", resp.status, body, payload)
                 else:
                     logger.info("转发成功 status=%s payload=%s", resp.status, payload)
         except Exception:

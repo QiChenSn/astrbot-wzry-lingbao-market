@@ -18,8 +18,8 @@
 ## 行为
 - 插件启用且配置合法时，监听所有消息。
 - 使用正则 `pattern` 查找匹配，按 `max_matches` 限制数量。
-- 对每个匹配发送 POST 到 `api_url`，JSON 体为 `{"data": {"code": <分享码>, "price": <价格>}}`，并附带配置的 `headers`。
-- 请求失败会记录日志（包含状态码和响应体），异常会输出请求的 url 与 payload。
+- 对每个匹配发送 POST 到 `api_url`，JSON 体为 `{ "code": <分享码>, "price": <价格> }`，并附带配置的 `headers`。
+- 请求失败会记录日志（包含状态码、响应体与 payload），异常会输出请求的 url 与 payload。
 
 
 ## 依赖
