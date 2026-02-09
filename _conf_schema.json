@@ -1,0 +1,47 @@
+{
+  "enabled": {
+    "type": "bool",
+    "description": "是否启用插件",
+    "default": true
+  },
+  "pattern": {
+    "type": "string",
+    "description": "用于匹配消息的正则表达式",
+    "default": ""
+  },
+  "api_url": {
+    "type": "string",
+    "description": "接收匹配内容的后端 POST 接口地址",
+    "default": ""
+  },
+  "max_matches": {
+    "type": "int",
+    "description": "每条消息最多转发几个匹配，<=0 表示全部",
+    "default": 1
+  },
+  "timeout": {
+    "type": "int",
+    "description": "请求超时时间（秒）",
+    "default": 5
+  },
+  "headers": {
+    "type": "list",
+    "description": "可选追加的 HTTP 头部列表，每项包含 key 和 value",
+    "default": [],
+    "items": {
+      "type": "object",
+      "items": {
+        "key": {
+          "type": "string",
+          "description": "Header 名称",
+          "default": ""
+        },
+        "value": {
+          "type": "string",
+          "description": "Header 值",
+          "default": ""
+        }
+      }
+    }
+  }
+}
