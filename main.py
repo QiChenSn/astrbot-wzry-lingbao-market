@@ -3,7 +3,7 @@ from astrbot.api.star import Context, Star, register
 from astrbot.api import logger, AstrBotConfig
 import re
 import aiohttp
-from typing import Optional, Dict, Any, List, Tuple
+from typing import Optional, Dict, Any, List
 
 DEFAULT_CONFIG = {
     "enabled": True,
@@ -11,6 +11,8 @@ DEFAULT_CONFIG = {
     "api_url": "",
     "max_matches": 0,
     "timeout": 5,
+    "min_price": 700,
+    "max_price": 980,
     "headers": [],
 }
 
@@ -24,6 +26,8 @@ class MyPlugin(Star):
         self._api_url: str = ""
         self._max_matches: int = 1
         self._timeout: int = 5
+        self._min_price: int = 0
+        self._max_price: int = 0
         self._headers: Dict[str, str] = {}
         self._session: Optional[aiohttp.ClientSession] = None
         self.initialize()
@@ -41,6 +45,8 @@ class MyPlugin(Star):
         self._api_url = str(self.config.get("api_url", "") or "").strip()
         self._max_matches = int(self.config.get("max_matches", 1) or 1)
         self._timeout = int(self.config.get("timeout", 5) or 5)
+        self._min_price = int(self.config.get("min_price", 0) or 0)
+        self._max_price = int(self.config.get("max_price", 0) or 0)
         headers_list: List[Dict[str, str]] = self.config.get("headers") or []
         self._headers = {
             str(item.get("key")).strip(): str(item.get("value")).strip()
@@ -49,12 +55,14 @@ class MyPlugin(Star):
         }
 
         logger.info(
-            "配置载入完成 enabled=%s pattern=%r api_url=%s max_matches=%s timeout=%s headers=%s",
+            "配置载入完成 enabled=%s pattern=%r api_url=%s max_matches=%s timeout=%s min_price=%s max_price=%s headers=%s",
             enabled,
             pattern,
             self._api_url,
             self._max_matches,
             self._timeout,
+            self._min_price,
+            self._max_price,
             self._headers,
         )
 
@@ -116,6 +124,14 @@ class MyPlugin(Star):
             price_int = int(price) if price is not None else 0
         except ValueError:
             logger.error("价格转换失败，无法转换为整数: price=%s", price)
+            return
+
+        # 价格区间过滤
+        if self._min_price > 0 and price_int < self._min_price:
+            logger.debug("价格 %s 低于最低价格 %s，跳过上传", price_int, self._min_price)
+            return
+        if self._max_price > 0 and price_int > self._max_price:
+            logger.debug("价格 %s 高于最高价格 %s，跳过上传", price_int, self._max_price)
             return
 
         payload = {"code": code_str, "price": price_int}

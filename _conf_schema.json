@@ -24,6 +24,16 @@
     "description": "请求超时时间（秒）",
     "default": 5
   },
+  "min_price": {
+    "type": "int",
+    "description": "最低价格，只有价格大于等于此值的分享码才会上传（0表示不限制）",
+    "default": 700
+  },
+  "max_price": {
+    "type": "int",
+    "description": "最高价格，只有价格小于等于此值的分享码才会上传（0表示不限制）",
+    "default": 980
+  },
   "headers": {
     "type": "list",
     "description": "可选追加的 HTTP 头部列表，每项包含 key 和 value",
